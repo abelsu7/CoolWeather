@@ -1,12 +1,15 @@
 package com.abelsu7.coolweather.activity;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -19,7 +22,7 @@ import com.abelsu7.coolweather.util.Utility;
  * Created by AbelSu on 2016/9/27.
  */
 
-public class WeatherActivity extends AppCompatActivity {
+public class WeatherActivity extends AppCompatActivity implements View.OnClickListener {
     private LinearLayout weatherInfoLayout;
     /**
      * 用于显示城市名
@@ -45,6 +48,37 @@ public class WeatherActivity extends AppCompatActivity {
      * 用于显示当前日期
      */
     private TextView currentDateText;
+    /**
+     * 切换城市按钮
+     */
+    private Button switchCity;
+    /**
+     * 更新天气按钮
+     */
+    private Button refreshWeather;
+
+
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.switch_city:
+                Intent intent = new Intent(this, ChooseAreaActivity.class);
+                intent.putExtra("from_weather_activity", true);
+                startActivity(intent);
+                finish();
+                break;
+            case R.id.refresh_weather:
+                publishText.setText("同步中...");
+                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+                String weatherCode = prefs.getString("weather_code", "");
+                if (!TextUtils.isEmpty(weatherCode)) {
+                    queryWeatherInfo(weatherCode);
+                }
+                break;
+            default:
+                break;
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,6 +103,10 @@ public class WeatherActivity extends AppCompatActivity {
             //没有县级代号就直接显示本地天气
             showWeather();
         }
+        switchCity = (Button) findViewById(R.id.switch_city);
+        refreshWeather = (Button) findViewById(R.id.refresh_weather);
+        switchCity.setOnClickListener(this);
+        refreshWeather.setOnClickListener(this);
     }
 
     /**
@@ -110,6 +148,7 @@ public class WeatherActivity extends AppCompatActivity {
                         @Override
                         public void run() {
                             showWeather();
+                            Log.d("address", address);
                         }
                     });
                 }
@@ -121,6 +160,7 @@ public class WeatherActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         publishText.setText("同步失败");
+                        Log.d("address", address);
                     }
                 });
             }
