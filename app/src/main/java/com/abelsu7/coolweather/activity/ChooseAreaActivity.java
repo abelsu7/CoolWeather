@@ -3,7 +3,10 @@ package com.abelsu7.coolweather.activity;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.app.assist.AssistStructure;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
@@ -76,6 +79,13 @@ public class ChooseAreaActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        if (prefs.getBoolean("city_selected", false)) {
+            Intent intent = new Intent(this, WeatherActivity.class);
+            startActivity(intent);
+            finish();
+            return;
+        }
 //        requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.choose_area);
         listView = (ListView) findViewById(R.id.list_view);
@@ -92,6 +102,12 @@ public class ChooseAreaActivity extends AppCompatActivity {
                 } else if (currentLevel == LEVEL_CITY) {
                     selectedCity = cityList.get(index);
                     queryCounties();
+                } else if (currentLevel == LEVEL_COUNTY) {
+                    String countyCode = countyList.get(index).getCountyCode();
+                    Intent intent = new Intent(ChooseAreaActivity.this, WeatherActivity.class);
+                    intent.putExtra("county_code", countyCode);
+                    startActivity(intent);
+                    finish();
                 }
             }
         });
@@ -203,7 +219,7 @@ public class ChooseAreaActivity extends AppCompatActivity {
                     public void run() {
                         closeProgressDialog();
 //                        Toast.makeText(ChooseAreaActivity.this, "加载失败", Toast.LENGTH_SHORT).show();
-                        Snackbar.make(listView,"加载失败",Snackbar.LENGTH_SHORT)
+                        Snackbar.make(listView, "加载失败", Snackbar.LENGTH_SHORT)
                                 .show();
                     }
                 });
